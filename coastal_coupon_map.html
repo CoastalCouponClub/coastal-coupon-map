@@ -12,7 +12,7 @@
       background-color: #fefef8;
       display: flex;
       flex-direction: row;
-      height: 100vh;
+      height: 100%;
     }
     #map {
       flex: 2;
@@ -39,6 +39,12 @@
       margin-bottom: 0.5rem;
       border-radius: 8px;
     }
+    .header {
+      font-family: 'Super Funtime', cursive;
+      font-size: 1.5rem;
+      color: #444;
+      margin-bottom: 1rem;
+    }
     .search, .category {
       padding: 0.5rem;
       margin-bottom: 1rem;
@@ -59,6 +65,7 @@
       border-radius: 8px;
       border: 2px solid #f0f0f0;
     }
+
     @media (max-width: 768px) {
       body {
         flex-direction: column;
@@ -80,9 +87,9 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 </head>
 <body>
-  <div id="map" style="height: 100vh;"></div>
+  <div id="map"></div>
   <div id="sidebar">
-    <input type="text" class="search" placeholder="Search businesses..." id="searchBox">
+        <input type="text" class="search" placeholder="Search businesses..." id="searchBox">
     <select id="categoryFilter" class="category">
       <option value="">All Categories</option>
     </select>
@@ -106,7 +113,7 @@
         download: true,
         header: true,
         complete: function(results) {
-          allBusinesses = results.data.filter(row => row.Name && row.Address);
+          allBusinesses = results.data.filter(row => row["Business Name"] && row.Address);
 
           const categories = [...new Set(allBusinesses.map(b => b.Category).filter(Boolean))];
           const categorySelect = document.getElementById('categoryFilter');
@@ -132,26 +139,40 @@
       const businessList = document.getElementById('businessList');
       businessList.innerHTML = '';
       clearMarkers();
+      let firstGeoLocation = null;
+      const businessList = document.getElementById('businessList');
+      businessList.innerHTML = '';
+      clearMarkers();
 
       allBusinesses.forEach(biz => {
-        if (!biz.Name.toLowerCase().includes(filter.toLowerCase())) return;
+        if (!biz["Business Name"].toLowerCase().includes(filter.toLowerCase())) return;
         if (category && biz.Category !== category) return;
 
         const div = document.createElement('div');
         div.className = 'business';
         div.innerHTML = `
-          <img src="${biz.Logo}" alt="${biz.Name}" />
+          <img src="${biz["Logo URL"]}" alt="${biz.Name}" />
           <strong>${biz.Name}</strong><br />
           <em>${biz.Address}</em><br />
-          <span>${biz.Deal}</span><br />
-          <a href="${biz.Link}" target="_blank">Visit Site</a>
+          <span>${biz["Deal Description"]}</span><br />
+          <a href="${biz["Website URL"]}" target="_blank">Visit Site</a>
         `;
+        div.addEventListener('click', () => {
+          if (firstGeoLocation) {
+            map.setCenter(firstGeoLocation);
+            map.setZoom(15);
+          }
+        });
         businessList.appendChild(div);
 
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ address: biz.Address }, (results, status) => {
           if (status === 'OK') {
-            const marker = new google.maps.Marker({
+          if (!firstGeoLocation) {
+            firstGeoLocation = results[0].geometry.location;
+            map.setCenter(firstGeoLocation);
+          }
+            const const marker = new google.maps.Marker({
               position: results[0].geometry.location,
               map: map,
               title: biz.Name,
