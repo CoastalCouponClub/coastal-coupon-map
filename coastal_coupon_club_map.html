@@ -131,6 +131,35 @@
       markers = [];
     }
 
+    function createCircularIcon(url, callback) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = url;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const size = 80;
+        canvas.width = canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        // Draw circle
+        ctx.beginPath();
+        ctx.arc(size/2, size/2, size/2 - 2, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(img, 0, 0, size, size);
+
+        // Draw border
+        ctx.beginPath();
+        ctx.arc(size/2, size/2, size/2 - 2, 0, Math.PI * 2, true);
+        ctx.strokeStyle = '#222d47';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        callback(canvas.toDataURL());
+      };
+    }
+
     function renderList(filter = '', category = '') {
       const businessList = document.getElementById('businessList');
       businessList.innerHTML = '';
@@ -167,31 +196,34 @@
               firstGeoLocation = results[0].geometry.location;
               map.setCenter(firstGeoLocation);
             }
-            const marker = new google.maps.Marker({
-              position: results[0].geometry.location,
-              map: map,
-              title: biz["Business Name"],
-              icon: {
-                url: biz["Logo URL"],
-                scaledSize: new google.maps.Size(40, 40),
-                anchor: new google.maps.Point(20, 20)
-              }
-            });
 
-            markers.push(marker);
-            markerMap[biz["Business Name"]] = marker;
+            createCircularIcon(biz["Logo URL"], (circularUrl) => {
+              const marker = new google.maps.Marker({
+                position: results[0].geometry.location,
+                map: map,
+                title: biz["Business Name"],
+                icon: {
+                  url: circularUrl,
+                  scaledSize: new google.maps.Size(40, 40),
+                  anchor: new google.maps.Point(20, 20)
+                }
+              });
 
-            const infowindow = new google.maps.InfoWindow({
-              content: `
-                <div style='font-weight:bold;'>${biz["Business Name"]}</div>
-                <img src="${biz["Logo URL"]}" style='width:80px; height:auto; border-radius:8px;' /><br />
-                <div>${biz["Deal Description"]}</div>
-                <a href="${biz["Website URL"]}" target="_blank">Visit Site</a>
-              `
-            });
+              markers.push(marker);
+              markerMap[biz["Business Name"]] = marker;
 
-            marker.addListener('click', () => {
-              infowindow.open(map, marker);
+              const infowindow = new google.maps.InfoWindow({
+                content: `
+                  <div style='font-weight:bold;'>${biz["Business Name"]}</div>
+                  <img src="${biz["Logo URL"]}" style='width:80px; height:auto; border-radius:8px;' /><br />
+                  <div>${biz["Deal Description"]}</div>
+                  <a href="${biz["Website URL"]}" target="_blank">Visit Site</a>
+                `
+              });
+
+              marker.addListener('click', () => {
+                infowindow.open(map, marker);
+              });
             });
           }
         });
