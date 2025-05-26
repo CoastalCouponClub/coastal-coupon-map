@@ -141,7 +141,6 @@
       let markerMap = {};
       clearMarkers();
       let firstGeoLocation = null;
-      const businessList = document.getElementById('businessList');
       businessList.innerHTML = '';
       clearMarkers();
 
@@ -153,7 +152,7 @@
         div.className = 'business';
         div.innerHTML = `
           <img src="${biz["Logo URL"]}" alt="${biz["Business Name"]}" />
-          <strong>${biz.Name}</strong><br />
+          <strong>${biz["Business Name"]}</strong><br />
           <em>${biz.Address}</em><br />
           <span>${biz["Deal Description"]}</span><br />
           <a href="${biz["Website URL"]}" target="_blank">Visit Site</a>
