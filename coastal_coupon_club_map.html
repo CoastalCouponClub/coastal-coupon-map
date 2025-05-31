@@ -26,10 +26,14 @@
   background-color: #fefef8;
   border-radius: 16px;
   margin-left: 8px;
-  height: 100%;
-  scrollbar-width: none;
   border: 3px solid #222d47;
   box-sizing: border-box;
+  min-height: 100%;
+}
+
+#container {
+  display: flex;
+  height: 100%;
 }
 
     #sidebar::-webkit-scrollbar {
@@ -215,7 +219,7 @@
 </head>
 <body>
   <div id="embedWrapper">
-  <div id="container" style="display: flex; height: 600px;">
+  <div id="container">
     <div id="map"></div>
     <div id="sidebar">
       <input type="text" class="search" placeholder="Search businesses..." id="searchBox">
