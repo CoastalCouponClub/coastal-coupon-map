@@ -15,6 +15,7 @@
     #container {
       display: flex;
       height: 100%;
+      flex-wrap: wrap;
     }
 
     #map {
@@ -133,6 +134,8 @@
 
       #map {
         height: 45vh;
+        width: 95%;
+        margin: 0 auto 12px auto;
         border-radius: 16px;
         border: 4px solid #222d47;
       }
@@ -141,7 +144,7 @@
         width: 95%;
         margin: 0 auto;
         padding: 1rem;
-        border-radius: 0;
+        border-radius: 12px;
         box-shadow: none;
       }
 
@@ -151,43 +154,42 @@
       }
 
       #businessList {
-        padding: 10px;
+        padding: 12px;
       }
 
       .business {
-        flex-direction: row;
-        gap: 10px;
-        padding: 10px 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 12px 0;
       }
 
       .business img {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
+        margin-bottom: 6px;
       }
 
       .business-name {
-        font-size: 12px;
+        font-size: 14px;
       }
 
       .business-address {
-        font-size: 10px;
+        font-size: 12px;
       }
 
       .business-deal {
-        font-size: 10px;
-        margin-bottom: 4px;
-        padding: 2px 5px;
+        font-size: 12px;
+        padding: 2px 6px;
       }
 
       .visit-link {
-        font-size: 10px;
-        padding: 4px 6px;
+        font-size: 12px;
+        padding: 6px 10px;
+        border-radius: 6px;
       }
     }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=ABeeZee&display=swap" rel="stylesheet">
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCweTO479qWGF9W5PX5NlxtfPWav5LcZQ"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 </head>
 <body>
   <div id="container">
@@ -200,122 +202,5 @@
       <div id="businessList"></div>
     </div>
   </div>
-  <script>
-    let map;
-    let allBusinesses = [];
-    let markers = [];
-
-    const fallbackLogo = "https://static.wixstatic.com/media/838f49_e6ac8637cea24f1f9ec00984ba010740~mv2.png";
-
-    function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 30.4, lng: -86.86 },
-        zoom: 13,
-      });
-    }
-
-    function fetchData() {
-      Papa.parse("https://docs.google.com/spreadsheets/d/e/2PACX-1vR_vRTR0dSR-AV_5GXfgqFUY52CULx3WySkZLgVP80rKp7Qna9E6fKi4HAObARD9tLmdndTnuo_b9rm/pub?output=csv", {
-        download: true,
-        header: true,
-        complete: function(results) {
-          allBusinesses = results.data.filter(row => row["Business Name"] && row.Address);
-          const categories = [...new Set(allBusinesses.map(b => b.Category).filter(Boolean))];
-          const categorySelect = document.getElementById('categoryFilter');
-          categorySelect.innerHTML = '<option value="">All Categories</option>';
-          categories.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat;
-            categorySelect.appendChild(opt);
-          });
-          renderList();
-        }
-      });
-    }
-
-    function clearMarkers() {
-      markers.forEach(marker => marker.setMap(null));
-      markers = [];
-    }
-
-    function renderList(filter = '', category = '') {
-      const businessList = document.getElementById('businessList');
-      businessList.innerHTML = '';
-      clearMarkers();
-
-      allBusinesses.forEach(biz => {
-        if (!biz["Business Name"].toLowerCase().includes(filter.toLowerCase())) return;
-        if (category && biz.Category !== category) return;
-
-        const logo = biz["Logo URL"] || fallbackLogo;
-
-        const div = document.createElement('div');
-        div.className = 'business';
-        div.innerHTML = `
-          <img src="${logo}" alt="${biz["Business Name"]}" />
-          <div class="business-info">
-            <div class="business-name">${biz["Business Name"]}</div>
-            <div class="business-address">${biz.Address}</div>
-            <div class="business-deal">${biz["Deal Description"]}</div>
-            <a href="${biz["Website URL"]}" target="_blank" class="visit-link">Visit Site</a>
-          </div>
-        `;
-        businessList.appendChild(div);
-
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: biz.Address }, (results, status) => {
-          if (status === 'OK') {
-            const marker = new google.maps.Marker({
-              position: results[0].geometry.location,
-              map: map,
-              title: biz["Business Name"],
-              icon: {
-                url: logo,
-                scaledSize: new google.maps.Size(40, 40),
-                anchor: new google.maps.Point(20, 20)
-              }
-            });
-
-            markers.push(marker);
-
-            const infowindow = new google.maps.InfoWindow({
-              content: `
-                <div style='font-family: ABeeZee, sans-serif; font-size: 14px; max-width: 200px;'>
-                  <div style='font-size: 16px; font-weight: bold;'>${biz["Business Name"]}</div>
-                  <img src="${logo}" style='width:60px; height:60px; border-radius:8px; margin:6px 0;' />
-                  <div style='background:#ffeaae; color:#222d47; font-weight:bold; padding:2px 6px; border-radius:4px; font-size:13px; display:inline-block; margin:4px 0;'>${biz["Deal Description"]}</div><br/>
-                  <a href="${biz["Website URL"]}" target="_blank" style="display:inline-block; background-color:#222d47; color:white; text-decoration:none; padding:4px 8px; border-radius:4px; font-size:12px;">Visit Site</a>
-                </div>
-              `
-            });
-
-            marker.addListener('click', () => {
-              infowindow.open(map, marker);
-            });
-
-            div.addEventListener('click', () => {
-              map.setCenter(marker.getPosition());
-              map.setZoom(15);
-              google.maps.event.trigger(marker, 'click');
-            });
-          }
-        });
-      });
-    }
-
-    document.getElementById('searchBox').addEventListener('input', (e) => {
-      renderList(e.target.value, document.getElementById('categoryFilter').value);
-    });
-
-    document.getElementById('categoryFilter').addEventListener('change', (e) => {
-      renderList(document.getElementById('searchBox').value, e.target.value);
-    });
-
-    window.onload = () => {
-      initMap();
-      fetchData();
-    };
-  </script>
 </body>
 </html>
