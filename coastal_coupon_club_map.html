@@ -71,7 +71,7 @@
       margin-bottom: 6px;
       font-size: 13px;
     }
-    .visit-link {
+    .visit-link, .directions-link {
       display: inline-block;
       background-color: #222d47;
       color: white;
@@ -79,37 +79,27 @@
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 12px;
+      margin-right: 6px;
     }
-
-    .gm-style-iw img {
-      max-width: 60px;
-      max-height: 60px;
-      border-radius: 8px;
-      display: block;
-      margin: 6px 0;
+    #searchBox, #categoryFilter {
+      width: 100%;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      border: 3px solid #222d47;
+      border-radius: 12px;
+      background-color: #fffdf3;
+      font-family: 'ABeeZee', sans-serif;
+      box-sizing: border-box;
+      color: #222d47;
+      appearance: none;
     }
-    
-#searchBox, #categoryFilter {
-  width: 100%;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  font-size: 14px;
-  border: 3px solid #222d47;
-  border-radius: 12px;
-  background-color: #fffdf3;
-  font-family: 'ABeeZee', sans-serif;
-  box-sizing: border-box;
-  color: #222d47;
-  appearance: none;
-}
-
-#categoryFilter {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='16' height='16' fill='%23222d47' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6.5 6 6.5-6H1.5z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px;
-}
-
+    #categoryFilter {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='16' height='16' fill='%23222d47' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6.5 6 6.5-6H1.5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 12px;
+    }
     @media (max-width: 768px) {
       #container {
         flex-direction: column !important;
@@ -189,14 +179,16 @@
       clearMarkers();
       let firstGeoLocation = null;
 
-      allBusinesses.forEach(biz => {
+      allBusinesses.forEach((biz, index) => {
         if (!biz["Business Name"].toLowerCase().includes(filter.toLowerCase())) return;
         if (category && biz.Category !== category) return;
 
         const logo = biz["Logo URL"] || fallbackLogo;
+        const directionsURL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(biz.Address)}`;
 
         const div = document.createElement('div');
         div.className = 'business';
+        div.dataset.index = index;
         div.innerHTML = `
           <img src="${logo}" alt="${biz["Business Name"]}" />
           <div class="business-info">
@@ -204,6 +196,7 @@
             <div class="business-address">${biz.Address}</div>
             <div class="business-deal">${biz["Deal Description"]}</div>
             <a href="${biz["Website URL"]}" target="_blank" class="visit-link">Visit Site</a>
+            <a href="${directionsURL}" target="_blank" class="directions-link">Get Directions</a>
           </div>
         `;
         div.style.cursor = 'pointer';
@@ -231,44 +224,18 @@
             markers.push(marker);
             markerMap[biz["Business Name"]] = marker;
 
-const infowindow = new google.maps.InfoWindow({
-  content: `
-    <div style="
-      font-family: ABeeZee, sans-serif; 
-      font-size: 14px; 
-      max-width: 200px; 
-      word-wrap: break-word;
-    ">
-      <div style="font-size: 15px; font-weight: bold;">${biz["Business Name"]}</div>
-      <img src="${logo}" style="width: 50px; height: 50px; border-radius: 8px; margin: 6px 0;" />
-      <div style="
-        background: #ffeaae; 
-        color: #222d47; 
-        font-weight: bold; 
-        padding: 2px 6px; 
-        border-radius: 4px; 
-        font-size: 12px; 
-        display: inline-block; 
-        margin: 4px 0;
-      ">
-        ${biz["Deal Description"]}
-      </div><br/>
-      <a href="${biz["Website URL"]}" target="_blank" style="
-        display: inline-block; 
-        background-color: #222d47; 
-        color: white; 
-        text-decoration: none; 
-        padding: 4px 8px; 
-        border-radius: 4px; 
-        font-size: 12px;
-      ">Visit Site</a>
-    </div>
-  `
-});
-
+            const infowindow = new google.maps.InfoWindow({
+              content: `<a href="${directionsURL}" target="_blank" style="font-family: ABeeZee, sans-serif; font-size: 14px;">📍 Get Directions</a>`
+            });
 
             marker.addListener('click', () => {
               infowindow.open(map, marker);
+              const match = [...document.querySelectorAll('.business')].find(el => el.dataset.index == index);
+              if (match) {
+                match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                match.style.background = '#ffeaae';
+                setTimeout(() => match.style.background = '', 2000);
+              }
             });
 
             div.addEventListener('click', () => {
