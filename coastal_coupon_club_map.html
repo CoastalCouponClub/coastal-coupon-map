@@ -21,7 +21,9 @@
       flex: 2;
       width: 100%;
       height: 100%;
+      border: 5px solid #222d47;
       border-radius: 16px;
+      box-sizing: border-box;
     }
 
     #sidebar {
@@ -33,7 +35,7 @@
       margin-left: 8px;
       box-sizing: border-box;
       min-height: 100%;
-      border: 5px solid #222d47;
+      border: none;
     }
 
     #sidebar::-webkit-scrollbar {
@@ -130,37 +132,60 @@
 
       #map {
         height: 50vh;
-        border-radius: 12px 12px 0 0;
+        border-radius: 12px;
+        border: 4px solid #222d47;
       }
 
       #sidebar {
         height: auto;
         margin: 0;
         padding: 1rem;
-        border-radius: 0 0 12px 12px;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      #businessList {
+        padding: 8px;
+      }
+
+      .business {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+      }
+
+      .business img {
+        width: 30px;
+        height: 30px;
+      }
+
+      .business-info {
+        flex-grow: 1;
+      }
+
+      .business-name {
+        font-size: 13px;
+      }
+
+      .business-address {
+        font-size: 11px;
+      }
+
+      .business-deal {
+        font-size: 11px;
+        padding: 2px 5px;
+      }
+
+      .visit-link {
+        font-size: 11px;
+        padding: 4px 6px;
       }
 
       #searchBox, #categoryFilter {
         font-size: 15px;
-      }
-
-      .business {
-        flex-direction: column;
-        padding: 10px 0;
-      }
-
-      .business img {
-        width: 40px;
-        height: 40px;
-        margin-bottom: 6px;
-      }
-
-      .business-name {
-        font-size: 16px;
-      }
-
-      .business-address, .business-deal, .visit-link {
-        font-size: 13px;
+        padding: 12px 14px;
       }
     }
   </style>
@@ -241,7 +266,7 @@
             <a href="${biz["Website URL"]}" target="_blank" class="visit-link">Visit Site</a>
           </div>
         `;
-        document.getElementById('businessList').appendChild(div);
+        businessList.appendChild(div);
 
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ address: biz.Address }, (results, status) => {
