@@ -127,6 +127,74 @@
         margin-top: 8px;
       }
     }
+    @media (max-width: 600px) {
+  #container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  #map {
+    height: 50vh;
+    border-radius: 12px 12px 0 0;
+  }
+
+  #sidebar {
+    height: auto;
+    padding: 1rem;
+    margin: 0;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .search, .category {
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .business {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .business img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 8px;
+  }
+
+  .business-info {
+    width: 100%;
+  }
+
+  .business-name {
+    font-size: 18px;
+  }
+
+  .business-address {
+    font-size: 14px;
+  }
+
+  .business-deal {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .visit-link {
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+
+  #searchBox,
+  #categoryFilter {
+    width: 100%;
+  }
+}
+
   </style>
   <link href="https://fonts.googleapis.com/css2?family=ABeeZee&display=swap" rel="stylesheet">
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCweTO479qWGF9W5PX5NlxtfPWav5LcZQ"></script>
