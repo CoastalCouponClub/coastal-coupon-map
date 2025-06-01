@@ -27,6 +27,7 @@
       margin-left: 8px;
       height: 100%;
       scrollbar-width: none;
+      position: relative;
     }
     #sidebar::-webkit-scrollbar {
       display: none;
@@ -79,8 +80,10 @@
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 12px;
-      margin-right: 6px;
+      margin-top: 4px;
+      margin-right: 4px;
     }
+
     #searchBox, #categoryFilter {
       width: 100%;
       padding: 10px 14px;
@@ -94,12 +97,30 @@
       color: #222d47;
       appearance: none;
     }
+
     #categoryFilter {
       background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='16' height='16' fill='%23222d47' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6.5 6 6.5-6H1.5z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
       background-size: 12px;
     }
+
+    #backToTopBtn {
+      display: none;
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 1000;
+      background-color: #222d47;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
     @media (max-width: 768px) {
       #container {
         flex-direction: column !important;
@@ -133,10 +154,13 @@
     </div>
   </div>
 
+  <button id="backToTopBtn" onclick="scrollToTop()">↑ Top</button>
+
   <script>
     let map;
     let allBusinesses = [];
     let markers = [];
+    let currentOpenInfoWindow = null;
 
     const fallbackLogo = "https://static.wixstatic.com/media/838f49_e6ac8637cea24f1f9ec00984ba010740~mv2.png";
 
@@ -175,7 +199,6 @@
     function renderList(filter = '', category = '') {
       const businessList = document.getElementById('businessList');
       businessList.innerHTML = '';
-      let markerMap = {};
       clearMarkers();
       let firstGeoLocation = null;
 
@@ -196,7 +219,7 @@
             <div class="business-address">${biz.Address}</div>
             <div class="business-deal">${biz["Deal Description"]}</div>
             <a href="${biz["Website URL"]}" target="_blank" class="visit-link">Visit Site</a>
-            <a href="${directionsURL}" target="_blank" class="directions-link">Get Directions</a>
+            <a href="${directionsURL}" target="_blank" class="directions-link">📍 Get Directions</a>
           </div>
         `;
         div.style.cursor = 'pointer';
@@ -221,16 +244,16 @@
               }
             });
 
-            markers.push(marker);
-            markerMap[biz["Business Name"]] = marker;
-
             const infowindow = new google.maps.InfoWindow({
-              content: `<a href="${directionsURL}" target="_blank" style="font-family: ABeeZee, sans-serif; font-size: 14px;">📍 Get Directions</a>`
+              content: `<a href="${directionsURL}" target="_blank" style="display:inline-block; background-color:#222d47; color:white; text-decoration:none; padding:4px 8px; border-radius:4px; font-size:12px; font-family:ABeeZee,sans-serif;">📍 Get Directions</a>`
             });
 
             marker.addListener('click', () => {
+              if (currentOpenInfoWindow) currentOpenInfoWindow.close();
               infowindow.open(map, marker);
-              const match = [...document.querySelectorAll('.business')].find(el => el.dataset.index == index);
+              currentOpenInfoWindow = infowindow;
+
+              const match = document.querySelector(`.business[data-index="${index}"]`);
               if (match) {
                 match.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 match.style.background = '#ffeaae';
@@ -243,6 +266,8 @@
               map.setZoom(15);
               google.maps.event.trigger(marker, 'click');
             });
+
+            markers.push(marker);
           }
         });
       });
@@ -254,6 +279,15 @@
 
     document.getElementById('categoryFilter').addEventListener('change', (e) => {
       renderList(document.getElementById('searchBox').value, e.target.value);
+    });
+
+    function scrollToTop() {
+      document.getElementById("sidebar").scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.getElementById("sidebar").addEventListener("scroll", function () {
+      const btn = document.getElementById("backToTopBtn");
+      btn.style.display = this.scrollTop > 150 ? "block" : "none";
     });
 
     window.onload = () => {
